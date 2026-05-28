@@ -33,7 +33,7 @@ const readlineSync = require('readline-sync');
 let animals = [];
 let fees = [];
 function addAnimal(name, fee) {
-    if (!name || fee < 0) {
+    if (!name || typeof fee !== 'number' || isNaN(fee) || fee < 0) {
         throw new Error("Invalid animal name or adoption fee!");
     }
     animals.push(name);
@@ -49,21 +49,47 @@ function getAdoptionFee(animalName) {
 // Main program
 console.log("Welcome to the Pet Shelter System");
 while (true) {
-    let action = readlineSync.question("Choose an action: 'add', 'fee', or 'exit': ").toLowerCase();
-    if (action === "exit") {
-        console.log("Goodbye!");
-        break;
-    }
-    if (action === "add") {
-        let animal = readlineSync.question("Enter the animal's name: ");
-        let fee = Number(readlineSync.question("Enter the adoption fee: "));
-        addAnimal(animal, fee);
-        console.log(`${animal} added with a fee of $${fee}.`);
-    } else if (action === "fee") {
-        let animal = readlineSync.question("Enter the animal's name to find its adoption fee: ");
-        console.log(`${animal}'s adoption fee is $${getAdoptionFee(animal)}.`);
-    } else {
-        console.log("Invalid action. Please choose 'add', 'fee', or 'exit'.");
+    try {
+        let actionInput = readlineSync.question("Choose an action: 'add', 'fee', or 'exit': ");
+        if (!actionInput) {
+            console.log("No action entered. Please choose 'add', 'fee', or 'exit'.");
+            continue;
+        }
+        let action = actionInput.toLowerCase();
+  
+        if (action === "exit") {
+            console.log("Goodbye!");
+            break;
+        }
+
+        if (action === "add") {
+            let animal = readlineSync.question("Enter the animal's name: ").trim();
+            let feeInput = readlineSync.question("Enter the adoption fee: ");
+            let fee = Number(feeInput);
+            try {
+                if (!animal) throw new Error('Animal name cannot be empty.');
+                if (isNaN(fee) || fee < 0) throw new Error('Adoption fee must be a non-negative number.');
+                addAnimal(animal, fee);
+                console.log(`${animal} added with a fee of $${fee}.`);
+            } catch (err) {
+                console.log('Error adding animal:', err.message);
+            }
+
+        } else if (action === "fee") {
+            let animal = readlineSync.question("Enter the animal's name to find its adoption fee: ").trim();
+            try {
+                if (!animal) throw new Error('Animal name cannot be empty.');
+                let fee = getAdoptionFee(animal);
+                console.log(`${animal}'s adoption fee is $${fee}.`);
+            } catch (err) {
+                console.log('Error:', err.message);
+            }
+
+        } else {
+            console.log("Invalid action. Please choose 'add', 'fee', or 'exit'.");
+        }
+    } catch (err) {
+        console.log('Unexpected error:', err.message);
     }
 }
 
@@ -76,7 +102,7 @@ Invalid Input Errors:
   What happens if the user provides a negative adoption fee or leaves the name blank?
   What happens if the user tries to find the fee for an animal that hasn’t been added?
 
-Code Flow Problems:
+Cofeede Flow Problems:
   What happens if the program throws an exception? Does the rest of the code continue running?
 
 Structured Exception Handling:
